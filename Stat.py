@@ -1,11 +1,10 @@
-from util import exec_mysql
+from util import exec_sql
 import datetime
 import logging
 from itertools import chain
 from dateutil.parser import parse # pip install python-dateutil
 from collections import namedtuple
 from cached_property import cached_property # pip install cached-property
-
 
 today = datetime.date.today()
 sojourner_start = datetime.date(2015, 3, 5)
@@ -28,7 +27,79 @@ class Stat(object):
     def load(self, name):
         if not name.startswith('@'):
             name = '@' + name
-        self.db_load(exec_mysql("call FindAgentByName('{name}');".format(name=name))[-1])
+
+        sql = '''
+               SELECT
+                 `agents`.`name`,
+                 `stats`.`date`,
+                 `stats`.`flag`,
+                 `stats`.`min-ap`,
+                 `stats`.`lifetime_ap`,
+                 `stats`.`recursions`,
+                 `stats`.`ap`,
+                 `stats`.`level`,
+                 `stats`.`explorer`,
+                 `stats`.`discoverer`,
+                 `stats`.`seer`,
+                 `stats`.`recon`,
+                 `stats`.`scout`,
+                 `stats`.`trekker`,
+                 `stats`.`builder`,
+                 `stats`.`connector`,
+                 `stats`.`mind-controller`,
+                 `stats`.`illuminator`,
+                 `stats`.`recharger`,
+                 `stats`.`liberator`,
+                 `stats`.`pioneer`,
+                 `stats`.`engineer`,
+                 `stats`.`purifier`,
+                 `stats`.`guardian`,
+                 `stats`.`specops`,
+                 `stats`.`missionday`,
+                 `stats`.`nl-1331-meetups`,
+                 `stats`.`cassandra-neutralizer`,
+                 `stats`.`hacker`,
+                 `stats`.`translator`,
+                 `stats`.`sojourner`,
+                 `stats`.`recruiter`,
+                 `stats`.`collector`,
+                 `stats`.`binder`,
+                 `stats`.`country-master`,
+                 `stats`.`neutralizer`,
+                 `stats`.`disruptor`,
+                 `stats`.`salvator`,
+                 `stats`.`smuggler`,
+                 `stats`.`link-master`,
+                 `stats`.`controller`,
+                 `stats`.`field-master`,
+                 `stats`.`magnusbuilder`,
+                 `stats`.`prime_challenge`,
+                 `stats`.`stealth_ops`,
+                 `stats`.`opr_live`,
+                 `stats`.`ocf`,
+                 `stats`.`intel_ops`,
+                 `stats`.`ifs`,
+                 `stats`.`dark_xm_threat`,
+                 `stats`.`myriad_hack`,
+                 `stats`.`aurora_glyph`,
+                 `stats`.`umbra_deploy`,
+                 `stats`.`didact_field`,
+                 `stats`.`drone_explorer`,
+                 `stats`.`drone_distance`,
+                 `stats`.`drone_recalls`,
+                 `stats`.`drone_sender`,
+                 `stats`.`maverick`,
+                 `stats`.`scout_controller`,
+                 `stats`.`crafter`,
+                 `stats`.`bb_combatant`,
+                 `stats`.`hack_the_world202104`,
+                 `stats`.`epoch`,
+                 `stats`.`matryoshka_links`,
+                 `stats`.`operation_sentinel`
+               FROM `stats`, `agents`
+               WHERE `stats`.`idagents` = `agents`.`idagents` AND `agents`.`name` = :name;
+        '''
+        self.db_load(exec_sql(sql, {"name": name})[-1])
 
     def db_load(self, row): # ATTENTION: DO NOT simply use 'SELECT * FROM stats;' here. It will end in tears.
         row = Row(*row) # your boat...
@@ -105,10 +176,10 @@ class Stat(object):
         self.didact_field = row.didact_field
 
         if str(self.name).startswith('@'):
-            self.agent_id = exec_mysql("SELECT idagents FROM agents WHERE name = '{0}';".format(self.name[:16]))[0][0]
+            self.agent_id = exec_sql("SELECT idagents FROM agents WHERE name = :name;", {"name": self.name[:16]})[0][0]
         else: # probably good enough, but if this still blows up then make sure it's a numeric id and not just a name missing its @
             self.agent_id = self.name
-            self.name = exec_mysql("SELECT name FROM agents WHERE idagents = '{0}';".format(self.agent_id))[0][0]
+            self.name = exec_sql("SELECT name FROM agents WHERE idagents = :agentid;", {"agentid": self.agent_id})[0][0]
 
     def table_load(self, **row):
         self.date = parse(row['last_submit'] if row['last_submit'] and not row['last_submit'].startswith('0') else '1000/1/1').date()
@@ -170,14 +241,16 @@ class Stat(object):
         self.second_sunday = row.get('second_sunday', 0)
         self.eos_imprint = row.get('eos_imprint', 0)
 
-        agent_id = exec_mysql("SELECT idagents FROM agents WHERE name = '{0}';".format(self.name))
+        agent_id = exec_sql("SELECT idagents FROM agents WHERE name = :name;",
+                              {"name":  self.name})
         if agent_id:
             self.agent_id = agent_id[0][0]
         else:
-            sql = '''INSERT INTO `agents` SET `name`='{0}', `faction`='{1}';'''.format(self.name, self.faction)
-            exec_mysql(sql)
+            sql = 'INSERT INTO `agents` SET `name`=:name, `faction`=:faction;'
+            exec_sql(sql, {"name": self.name, "faction": self.faction})
             logging.info('new entry created for {} in agents table'.format(self.name))
-            self.agent_id = exec_mysql("SELECT idagents FROM agents WHERE name = '{0}';".format(self.name))[0][0]
+            self.agent_id = exec_sql("SELECT idagents FROM agents WHERE name = :name;",
+                                       {"name": self.name})[0][0]
 
     @cached_property
     def min_ap(self):
@@ -256,7 +329,8 @@ class Stat(object):
         max_sojourner = (self.date - sojourner_start).days + 1
         max_guardian = (self.date - game_start).days + 1
 
-        apdiff = exec_mysql("SELECT apdiff FROM agents WHERE `name` = '{0}';".format(self.name))
+        apdiff = exec_sql("SELECT apdiff FROM agents WHERE `name` = :name;",
+                            {"name": self.name})
         if apdiff: self.apdiff = apdiff[0][0]
 
         reasons = []
@@ -309,133 +383,99 @@ class Stat(object):
         #    reasons.append( 'apdiff %s > %s' % (self.apdiff, self.lifetime_ap-self.min_ap) )
 
         if not reasons:
-            exec_mysql("UPDATE agents SET apdiff={0} WHERE `name`='{1}';".format(self.lifetime_ap-self.min_ap, self.name))
+            exec_sql("UPDATE agents SET apdiff=:apdiff WHERE `name`=:name;",
+                       {"name": self.name, "apdiff": self.lifetime_ap-self.min_ap})
 
         return reasons
 
     def save(self):
         self.flag, self.min_ap # hack to make sure these are in the cache
 
-        sql = '''INSERT INTO `stats`
-                 SET idagents={agent_id},
-                     `date`='{date}',
-                     `level`='{level}',
-                     ap='{ap}',
-                     lifetime_ap='{lifetime_ap}',
-                     recursions='{recursions}',
-                     explorer='{explorer}',
-                     discoverer='{discoverer}',
-                     seer='{seer}',
-                     recon='{recon}',
-                     scout='{scout}',
-                     trekker='{trekker}',
-                     builder='{builder}',
-                     connector='{connector}',
-                     `mind-controller`='{mind_controller}',
-                     illuminator='{illuminator}',
-                     recharger='{recharger}',
-                     liberator='{liberator}',
-                     pioneer='{pioneer}',
-                     engineer='{engineer}',
-                     purifier='{purifier}',
-                     guardian='{guardian}',
-                     specops='{specops}',
-                     missionday='{missionday}',
-                     `nl-1331-meetups`='{nl_1331_meetups}',
-                     hacker='{hacker}',
-                     translator='{translator}',
-                     sojourner='{sojourner}',
-                     recruiter='{recruiter}',
-                     collector='{collector}',
-                     binder='{binder}',
-                     `country-master`='{country_master}',
-                     neutralizer='{neutralizer}',
-                     disruptor='{disruptor}',
-                     salvator='{salvator}',
-                     smuggler='{smuggler}',
-                     `link-master`='{link_master}',
-                     controller='{controller}',
-                     `field-master`='{field_master}',
-                     prime_challenge='{prime_challenge}',
-                     stealth_ops='{stealth_ops}',
-                     opr_live='{opr_live}',
-                     ocf='{ocf}',
-                     intel_ops='{intel_ops}',
-                     ifs='{ifs}',
-                     drone_explorer='{drone_explorer}',
-                     drone_distance='{drone_distance}',
-                     drone_recalls='{drone_recalls}',
-                     drone_sender='{drone_sender}',
-                     maverick='{maverick}',
-                     scout_controller='{scout_controller}',
-                     crafter='{crafter}',
-                     bb_combatant='{bb_combatant}',
-                     epoch='{epoch}',
-                     operation_sentinel='{operation_sentinel}',
-                     second_sunday='{second_sunday}',
-                     eos_imprint='{eos_imprint}',
+        # for fld in a._fields:
+        # print fld
+        # print getattr(a, fld)
+        # for name, value in a_namedtuple._asdict().items()
+        #    print(name, value)
 
-                     flag={flag},
-                     `min-ap`='{min_ap}'
-                 ON DUPLICATE KEY UPDATE `level`='{level}',
-                                         ap='{ap}',
-                                         lifetime_ap='{lifetime_ap}',
-                                         recursions='{recursions}',
-                                         explorer='{explorer}',
-                                         discoverer='{discoverer}',
-                                         seer='{seer}',
-                                         recon='{recon}',
-                                         scout='{scout}',
-                                         trekker='{trekker}',
-                                         builder='{builder}',
-                                         connector='{connector}',
-                                         `mind-controller`='{mind_controller}',
-                                         illuminator='{illuminator}',
-                                         recharger='{recharger}',
-                                         liberator='{liberator}',
-                                         pioneer='{pioneer}',
-                                         engineer='{engineer}',
-                                         purifier='{purifier}',
-                                         guardian='{guardian}',
-                                         specops='{specops}',
-                                         missionday='{missionday}',
-                                         `nl-1331-meetups`='{nl_1331_meetups}',
-                                         hacker='{hacker}',
-                                         translator='{translator}',
-                                         sojourner='{sojourner}',
-                                         recruiter='{recruiter}',
-                                         collector='{collector}',
-                                         binder='{binder}',
-                                         `country-master`='{country_master}',
-                                         neutralizer='{neutralizer}',
-                                         disruptor='{disruptor}',
-                                         salvator='{salvator}',
-                                         smuggler='{smuggler}',
-                                         `link-master`='{link_master}',
-                                         controller='{controller}',
-                                         `field-master`='{field_master}',
-                                         prime_challenge='{prime_challenge}',
-                                         stealth_ops='{stealth_ops}',
-                                         opr_live='{opr_live}',
-                                         ocf='{ocf}',
-                                         intel_ops='{intel_ops}',
-                                         ifs='{ifs}',
-                                         drone_explorer='{drone_explorer}',
-                                         drone_distance='{drone_distance}',
-                                         drone_recalls='{drone_recalls}',
-                                         drone_sender='{drone_sender}',
-                                         maverick='{maverick}',
-                                         scout_controller='{scout_controller}',
-                                         crafter='{crafter}',
-                                         bb_combatant='{bb_combatant}',
-                                         epoch='{epoch}',
-                                         operation_sentinel='{operation_sentinel}',
-                                         second_sunday='{second_sunday}',
-                                         eos_imprint='{eos_imprint}',
-
-                                         flag={flag},
-                                         `min-ap`='{min_ap}';'''.format(**self.__dict__)
-        self.changed = exec_mysql(sql)
+        sql = '''
+        INSERT INTO stats(idagents, `date`, `level`, ap, lifetime_ap, recursions, explorer,
+        discoverer, seer, recon, scout, trekker, builder, connector, `mind-controller`,
+        illuminator, recharger, liberator, pioneer, engineer, purifier, guardian,
+        specops, missionday, `nl-1331-meetups`, hacker, translator, sojourner, recruiter,
+        collector, binder, `country-master`, neutralizer, disruptor, salvator,
+        smuggler, `link-master`, controller, `field-master`, prime_challenge, stealth_ops,
+        opr_live, ocf, intel_ops, ifs, drone_explorer, drone_distance, drone_recalls,
+        drone_sender, maverick, scout_controller, crafter, bb_combatant, epoch,
+        operation_sentinel, second_sunday, eos_imprint, flag, `min-ap`)
+        VALUES (:agent_id, :date, :level, :ap, :lifetime_ap, :recursions, :explorer,
+        :discoverer, :seer, :recon, :scout, :trekker, :builder, :connector, :mind_controller,
+        :illuminator, :recharger, :liberator, :pioneer, :engineer, :purifier, :guardian,
+        :specops, :missionday, :nl_1331_meetups, :hacker, :translator, :sojourner, :recruiter,
+        :collector, :binder, :country_master, :neutralizer, :disruptor, :salvator,
+        :smuggler, :link_master, :controller, :field_master, :prime_challenge, :stealth_ops,
+        :opr_live, :ocf, :intel_ops, :ifs, :drone_explorer, :drone_distance, :drone_recalls,
+        :drone_sender, :maverick, :scout_controller, :crafter, :bb_combatant, :epoch,
+        :operation_sentinel, :second_sunday, :eos_imprint, :flag, :min_ap)
+        ON CONFLICT DO UPDATE SET
+        `level`=:level,
+        ap=:ap,
+        lifetime_ap=:lifetime_ap,
+        recursions=:recursions,
+        explorer=:explorer,
+        discoverer=:discoverer,
+        seer=:seer,
+        recon=:recon,
+        scout=:scout,
+        trekker=:trekker,
+        builder=:builder,
+        connector=:connector,
+        `mind-controller`=:mind_controller,
+        illuminator=:illuminator,
+        recharger=:recharger,
+        liberator=:liberator,
+        pioneer=:pioneer,
+        engineer=:engineer,
+        purifier=:purifier,
+        guardian=:guardian,
+        specops=:specops,
+        missionday=:missionday,
+        `nl-1331-meetups`=:nl_1331_meetups,
+        hacker=:hacker,
+        translator=:translator,
+        sojourner=:sojourner,
+        recruiter=:recruiter,
+        collector=:collector,
+        binder=:binder,
+        `country-master`=:country_master,
+        neutralizer=:neutralizer,
+        disruptor=:disruptor,
+        salvator=:salvator,
+        smuggler=:smuggler,
+        `link-master`=:link_master,
+        controller=:controller,
+        `field-master`=:field_master,
+        prime_challenge=:prime_challenge,
+        stealth_ops=:stealth_ops,
+        opr_live=:opr_live,
+        ocf=:ocf,
+        intel_ops=:intel_ops,
+        ifs=:ifs,
+        drone_explorer=:drone_explorer,
+        drone_distance=:drone_distance,
+        drone_recalls=:drone_recalls,
+        drone_sender=:drone_sender,
+        maverick=:maverick,
+        scout_controller=:scout_controller,
+        crafter=:crafter,
+        bb_combatant=:bb_combatant,
+        epoch=:epoch,
+        operation_sentinel=:operation_sentinel,
+        second_sunday=:second_sunday,
+	eos_imprint=:eos_imprint,
+        flag=:flag,
+        `min-ap`=:min_ap;
+        '''
+        self.changed = exec_sql(sql, dict(**self.__dict__))
 
     def __repr__(self):
         return '<Stat: {} {}>'.format(self.name, self.date)

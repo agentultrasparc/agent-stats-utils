@@ -1,3 +1,5 @@
+# XXX not converted
+
 USE `agent_stats`;
 
 ALTER TABLE `agent_stats`.`stats`

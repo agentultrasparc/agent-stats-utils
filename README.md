@@ -15,7 +15,7 @@ Copy secrets.py.example to secrets.py and change the settings and credentials in
 there to real values. Get yourself an [API key](https://www.agent-stats.com/preferences.php) and put it in secrets.py .  
 Then create a virtualenv, activate it and install the requirements:
 ```
-virtualenv -p /usr/bin/python3 venv
+python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```

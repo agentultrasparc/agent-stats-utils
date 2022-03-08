@@ -18,15 +18,14 @@ from num2words import num2words as n2w  # pip install num2words
 from titlecase import titlecase  # pip install titlecase
 
 from Stat import Stat
-from util import cm, exec_mysql, mail
+from util import cm, exec_sql, mail
 
 try:
     from extra_stats import compute_extra_categories # see extra_stats.py.example for what this file should look like
 except ImportError:
     compute_extra_categories = lambda data: ({}, [], data)
 
-
-cm.set_credentials(dbconfig)
+cm.set_config(dbconfig)
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(message)s",
@@ -181,7 +180,8 @@ def get_groups(group=None):
     if group not in ('smurfs', 'frogs', 'all', None):
         group_id = group
         if not re.fullmatch(r'([0-9a-f]{14}\.[\d]{8})', group_id):
-            group_id = exec_mysql(f'SELECT url FROM `groups` WHERE `name` = "{group}"')[0][0]
+            group_id = exec_sql('SELECT url FROM `groups` WHERE `name` = :group;',
+                                  {"group": group})[0][0]
 
         try:
             group_name = groups()[group_id]
@@ -234,18 +234,14 @@ def debug(group):
 
 def collate_agents():
     logging.info('collate agents')
-    general_groups = dict(exec_mysql("SELECT name, idgroups FROM `groups` WHERE name IN ('smurfs', 'frogs', 'all');"))
-    for agent_id, faction in exec_mysql('SELECT idagents, faction FROM agents;'):
+    general_groups = dict(exec_sql("SELECT name, idgroups FROM `groups` WHERE name IN ('smurfs', 'frogs', 'all');"))
+    for agent_id, faction in exec_sql('SELECT idagents, faction FROM agents;'):
         faction = 'frogs' if faction == 'enl' else 'smurfs'
-        sql = f'''INSERT INTO `membership`
-                  VALUES ('{agent_id}', '{general_groups['all']}')
-                  ON DUPLICATE KEY UPDATE idagents=idagents;'''
-        exec_mysql(sql)
+        sql = 'INSERT OR IGNORE INTO `membership`(idagents, idgroups) VALUES (:agent_id, :id_group);'
+        exec_sql(sql, {"agent_id": agent_id, "id_group": general_groups['all']})
 
-        sql = f'''INSERT INTO `membership`
-                  VALUES ('{agent_id}', '{general_groups[faction]}')
-                  ON DUPLICATE KEY UPDATE idagents=idagents;'''
-        exec_mysql(sql)
+        sql = 'INSERT OR IGNORE INTO `membership`(idagents, idgroups) VALUES (:agent_id, :id_group);'
+        exec_sql(sql, {"agent_id": agent_id, "id_group": general_groups[faction]})
 
 def snarf(group=None):
     group_id, group_name = get_groups(group)
@@ -253,19 +249,23 @@ def snarf(group=None):
     if not group_id:
         results = []
         for group_id, group_name in groups().items():
-            idgroups = exec_mysql(f"SELECT idgroups FROM `groups` WHERE url = '{group_id}';")
+            idgroups = exec_sql("SELECT `idgroups` FROM `groups` WHERE `url` = :groupid;",
+                                  {"groupid": group_id})
             if not idgroups:
-                sql = f'''INSERT INTO `groups`
-                          SET `name`='{group_name}', url='{group_id}';'''
-                exec_mysql(sql)
+                exec_sql('INSERT INTO `groups` SET `name`=:groupname, `url`=:groupid;',
+                           {"groupname": group_name, "groupid": group_id})
             results.append(snarf(group_id)) # getting all recursive and shiz
         collate_agents()
         return '\n'.join(filter(None, results))
     else:
         logging.info(f'snarfing {group_name}')
         added, removed, flagged, flipped = [], [], [], []
-        idgroups = exec_mysql(f"SELECT idgroups FROM `groups` WHERE url = '{group_id}';")[0][0]
-        remaining_roster = [item for sublist in exec_mysql(f"SELECT idagents FROM membership WHERE idgroups = {idgroups};") for item in sublist] # get the class attendance sheet
+        idgroups = exec_sql('SELECT idgroups FROM `groups` WHERE url=:group_id;',
+                              {"group_id": group_id})[0][0]
+        remaining_roster = [item for sublist in
+                            exec_sql('SELECT idagents FROM membership WHERE idgroups=:idgroups;',
+                                       {"idgroups": idgroups})
+                            for item in sublist] # get the class attendance sheet
 
         logging.info(f'read table: group {group_name}, span now')
         for data in read_table(group_id, 'now'):
@@ -281,21 +281,22 @@ def snarf(group=None):
                 logging.info(f'Agent added: {stat.faction.upper()} {stat.name}') # new kid
                 added.append(stat.faction.upper() + ' ' + stat.name)
 
-            sql = f'''INSERT INTO `membership`
-                      VALUES ('{stat.agent_id}', '{idgroups}')
-                      ON DUPLICATE KEY UPDATE idagents=idagents;'''
-            exec_mysql(sql)
+            exec_sql('INSERT OR IGNORE INTO `membership`(idagents, idgroups) VALUES (:agent_id, :idgroups);',
+                       {"agent_id": stat.agent_id, "idgroups": idgroups})
 
-            if stat.faction != exec_mysql(f'SELECT faction FROM agents WHERE `name` = "{stat.name}";')[0][0]:
+            if stat.faction != exec_sql('SELECT faction FROM agents WHERE `name`=:statname;',
+                                          {"statname": stat.name})[0][0]:
                 logging.info(f'Agent flipped: {stat.name} -> {stat.faction.upper()}')
                 flipped.append(f'{stat.name} -> {stat.faction}')
-                exec_mysql(f'UPDATE agents SET faction="{stat.faction}" WHERE `name`="{stat.name}";')
+                exec_sql('UPDATE agents SET faction=:faction WHERE `name`=:name;',
+                           {"faction": stat.faction, "name": stat.name})
 
         if remaining_roster:
             remaining_roster = str(tuple(remaining_roster)).replace(',)',')') # absentees
-            removed = sum(exec_mysql(f"SELECT name FROM agents WHERE idagents in {remaining_roster};"), ())
+            removed = sum(exec_sql(f"SELECT name FROM agents WHERE idagents IN {remaining_roster};".format()), ())
             logging.info(f'Agent(s) removed: {removed}')
-            exec_mysql(f"DELETE FROM membership WHERE idagents in {remaining_roster} and idgroups = {idgroups};")
+            exec_sql(f"DELETE FROM membership WHERE idagents IN {remaining_roster} and idgroups = :idgroups;".format(),
+                       {"idgroups": idgroups})
 
         output = []
         if added or removed or flagged or flipped:
@@ -452,14 +453,14 @@ def summary(group='all', days=7):
                          WHERE a.idagents = s.idagents AND
                                s.idagents = m.idagents AND
                                m.idgroups = g.idgroups AND
-                               g.`url` = '{group_id}' AND
+                               g.`url` = :group_id AND
                                s.flag != 1 AND
-                               date < ( CURDATE() - INTERVAL {days} DAY )
+                               date < date('now', '- {days} days')
                          GROUP BY id ) x
                      JOIN stats s ON x.id = s.idagents AND x.date = s.date'''
 
     baseline = {}
-    for row in exec_mysql(sql_before):
+    for row in exec_sql(sql_before, {"group_id": group_id}):
         agent = row[0]
         if row[1]: # if has date. filters out the agents with rows of all 0s
             baseline[agent] = {'date': row[1], 'level': row[2], 'ap': row[3],
@@ -477,16 +478,16 @@ def summary(group='all', days=7):
                          WHERE a.idagents = s.idagents AND
                                s.idagents = m.idagents AND
                                m.idgroups = g.idgroups AND
-                               g.`url` = '{group_id}' AND
+                               g.`url` = :group_id AND
                                s.flag != 1 AND
-                               date >= ( CURDATE() - INTERVAL {days} DAY )
+                               date >= date('now', '- {days} days')
                          GROUP BY id ) x
                      JOIN stats s ON x.id = s.idagents AND x.date = s.date
                      ORDER BY x.name'''
 
     output = {'data': []}
     footnote = ''
-    for row in exec_mysql(sql_now):
+    for row in exec_sql(sql_now, {"group_id": group_id}):
         agent = row[0]
         if agent in baseline:
             date_old = baseline[agent]['date']
@@ -653,7 +654,7 @@ def render(output_dict):
     return template.render(**output_dict)
 
 def validate_group(group):
-    groups = [name for row in exec_mysql('SELECT name, url FROM `groups`;') for name in row]
+    groups = [name for row in exec_sql('SELECT name, url FROM `groups`;') for name in row]
     groups.append(None)
     if group in groups:
         return group
@@ -707,7 +708,7 @@ def check_categories(*args):
     return '\n'.join(message)
 
 def update_group_names(group):
-    db = dict(exec_mysql('SELECT url, `name` FROM `groups` WHERE url IS NOT NULL;'))
+    db = dict(exec_sql('SELECT url, `name` FROM `groups` WHERE url IS NOT NULL;'))
     web = dict(groups())
     allgood = True
     for gid in web:
@@ -715,7 +716,7 @@ def update_group_names(group):
             allgood = False
             print(f'{gid} was named "{db[gid]}" is now "{web[gid]}"')
             if input('Update the database? (y/N) ').lower().startswith('y'):
-                exec_mysql(f'UPDATE `groups` SET `name`="{web[gid]}" WHERE url="{gid}" AND `name`="{db[gid]}";')
+                exec_sql(f'UPDATE `groups` SET `name`=:name WHERE url=:url AND `name`=:oldname;', { "name": web[gid], "url": gid, "oldname": db[gid]})
     if allgood:
         print('\nAll group names match\n')
 
