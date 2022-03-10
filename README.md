@@ -6,7 +6,6 @@ Handy utilities for managing an ingress agent-stats group.
 "Easy" instructions for getting started on ubuntu 16.04 are now on the [wiki](https://github.com/Yossi/agent-stats-utils/wiki/Ubuntu-16.04-instructions-from-scratch).
 ### Requirements
   * python3.6+
-  * mysql server
 
 Clone this repo.   
 Create database from schema.sql (This is destructive to existing tables. DO NOT 
@@ -121,3 +120,24 @@ one time and then all subsequent stats will be flagged. If this happens, please
 find the user in the agents table and adjust the apdiff column manually. (learn
 some SQL, you lazy bum)~~ (While this was fun to work out, it doesn't really provide a very good
 signal. Far too much noise. So I cut it out)
+
+## Migrating from mysql to sqlite3
+
+### Dump mysql database
+
+```sh
+mysqldump -u root -p --compact --no-create-db --no-create-info --compatible=ansi --default-character-set=latin1 agent_stats > mysql-backup.sql
+```
+
+### Remove redundant insertions into 'groups' table
+
+edit mysql-backup.sql, remove the following: `(1,'all',NULL),(2,'smurfs',NULL),(3,'frogs',NULL)`
+
+### Change "INSERT" to "INSERT OR REPLACE"
+
+### Import into sqlite3
+
+```sh
+sqlite3 agent_stats.db < schema.sql
+sqlite3 agent_stats.db < mysql-backup.sql
+```
