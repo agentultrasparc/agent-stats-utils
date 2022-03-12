@@ -416,7 +416,7 @@ class Stat(object):
         :opr_live, :ocf, :intel_ops, :ifs, :drone_explorer, :drone_distance, :drone_recalls,
         :drone_sender, :maverick, :scout_controller, :crafter, :bb_combatant, :epoch,
         :operation_sentinel, :second_sunday, :eos_imprint, :flag, :min_ap)
-        ON CONFLICT DO UPDATE SET
+        ON CONFLICT (idagents, `date`) DO UPDATE SET
         `level`=:level,
         ap=:ap,
         lifetime_ap=:lifetime_ap,
