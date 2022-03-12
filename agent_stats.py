@@ -441,12 +441,16 @@ def summary(group='all', days=7):
                'eos_imprint',
     )
 
-    sql_before = f'''SELECT x.name, s.`date`, `level`, ap, explorer, discoverer, seer, recon, scout, trekker, builder, connector,
-                            `mind-controller` mind_controller, illuminator, recharger, liberator, pioneer, engineer, purifier,
-                            specops, missionday, `nl-1331-meetups` nl_1331_meetups, `cassandra-neutralizer` cassandra_neutralizer,
-                            hacker, translator, sojourner, recruiter, magnusbuilder, recursions, prime_challenge, stealth_ops,
-                            opr_live, ocf, intel_ops, ifs, maverick, dark_xm_threat, myriad_hack, aurora_glyph, umbra_deploy,
-                            didact_field, scout_controller, epoch, second_sunday, eos_imprint
+    sql_before = f'''SELECT x.name, s.`date`, `level`, ap, explorer, discoverer,
+                     seer, recon, scout, trekker, builder, connector,
+                     `mind-controller`, illuminator, recharger,
+                     liberator, pioneer, engineer, purifier, specops, missionday,
+                     `nl-1331-meetups`, `cassandra-neutralizer`,
+                     hacker, translator, sojourner, recruiter, magnusbuilder,
+                     recursions, prime_challenge, stealth_ops,
+                     opr_live, ocf, intel_ops, ifs, maverick, dark_xm_threat,
+                     myriad_hack, aurora_glyph, umbra_deploy, didact_field,
+                     scout_controller, epoch, second_sunday, eos_imprint
                      FROM (
                          SELECT a.name name, s.idagents id, MAX(s.date) AS date
                          FROM agents a, stats s, membership m, `groups` g
@@ -455,10 +459,9 @@ def summary(group='all', days=7):
                                m.idgroups = g.idgroups AND
                                g.`url` = :group_id AND
                                s.flag != 1 AND
-                               date < date('now', '- {days} days')
+                               date < date('now', '-{days} days')
                          GROUP BY id ) x
-                     JOIN stats s ON x.id = s.idagents AND x.date = s.date'''
-
+                     JOIN stats s ON x.id = s.idagents AND x.date = s.date;'''
     baseline = {}
     for row in exec_sql(sql_before, {"group_id": group_id}):
         agent = row[0]
@@ -466,12 +469,16 @@ def summary(group='all', days=7):
             baseline[agent] = {'date': row[1], 'level': row[2], 'ap': row[3],
                                'badges': get_badges(dict(zip(headers, row[4:])))}
 
-    sql_now = f'''SELECT x.name, s.`date`, `level`, ap, explorer, discoverer, seer, recon, scout, trekker, builder, connector,
-                         `mind-controller` mind_controller, illuminator, recharger, liberator, pioneer, engineer, purifier,
-                         specops, missionday, `nl-1331-meetups` nl_1331_meetups, `cassandra-neutralizer` cassandra_neutralizer,
-                         hacker, translator, sojourner, recruiter, magnusbuilder, recursions, prime_challenge, stealth_ops,
-                         opr_live, ocf, intel_ops, ifs, maverick, dark_xm_threat, myriad_hack, aurora_glyph, umbra_deploy,
-                         didact_field, scout_controller, epoch, second_sunday, eos_imprint
+    sql_now = f'''SELECT x.name, s.`date`, `level`, ap, explorer, discoverer,
+                  seer, recon, scout, trekker, builder, connector,
+                  `mind-controller` mind_controller, illuminator, recharger,
+                  liberator, pioneer, engineer, purifier, specops, missionday,
+                  `nl-1331-meetups` nl_1331_meetups, `cassandra-neutralizer`,
+                  hacker, translator, sojourner, recruiter, magnusbuilder,
+                  recursions, prime_challenge, stealth_ops,
+                  opr_live, ocf, intel_ops, ifs, maverick, dark_xm_threat,
+                  myriad_hack, aurora_glyph, umbra_deploy, didact_field,
+                  scout_controller, epoch, second_sunday, eos_imprint
                      FROM (
                          SELECT a.name name, s.idagents id, MAX(s.date) AS date
                          FROM agents a, stats s, membership m, `groups` g
@@ -480,18 +487,17 @@ def summary(group='all', days=7):
                                m.idgroups = g.idgroups AND
                                g.`url` = :group_id AND
                                s.flag != 1 AND
-                               date >= date('now', '- {days} days')
+                               date >= date('now', '-{days} days')
                          GROUP BY id ) x
                      JOIN stats s ON x.id = s.idagents AND x.date = s.date
-                     ORDER BY x.name'''
-
+                     ORDER BY x.name;'''
     output = {'data': []}
     footnote = ''
     for row in exec_sql(sql_now, {"group_id": group_id}):
         agent = row[0]
         if agent in baseline:
-            date_old = baseline[agent]['date']
-            date_new = row[1]
+            date_old = datetime.datetime.strptime(baseline[agent]['date'], "%Y-%m-%d").date()
+            date_new = datetime.datetime.strptime(row[1], "%Y-%m-%d").date()
             level_old = baseline[agent]['level']
             level_new = row[2]
             ap_old = baseline[agent]['ap']
