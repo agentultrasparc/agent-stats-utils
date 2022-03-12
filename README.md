@@ -5,7 +5,7 @@ Handy utilities for managing an ingress agent-stats group.
 ## Setting up
 "Easy" instructions for getting started on ubuntu 16.04 are now on the [wiki](https://github.com/Yossi/agent-stats-utils/wiki/Ubuntu-16.04-instructions-from-scratch).
 ### Requirements
-  * python3.6+
+  * python3.8+
 
 Clone this repo.   
 Create database from schema.sql (This is destructive to existing tables. DO NOT 
