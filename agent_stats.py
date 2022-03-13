@@ -541,6 +541,17 @@ def summary(group='all', days=7):
         output['footnote'] = footnote
     return output
 
+def display_summary(group):
+    group_id, group_name = get_groups(group)
+    if not group_id: return 'please specify a group'
+
+    dings = summary(group_id, 7)
+    if "data" in dings:
+        for agent in dings['data']:
+            print(f"{agent['name']}: {agent['earned']}")
+    if "footnote" in dings:
+        print(f"{dings['footnote']}")
+
 def weekly_roundup(group):
     group_id, group_name = get_groups(group)
     if not group_id: return 'please specify a group'
@@ -728,7 +739,7 @@ def update_group_names(group):
 
 if __name__ == '__main__':
     actions = OrderedDict([('snarf', snarf),
-                           ('summary', summary),
+                           ('summary', display_summary),
                            ('weekly', weekly_roundup),
                            ('monthly', monthly_roundup),
                            ('custom', custom_roundup),
