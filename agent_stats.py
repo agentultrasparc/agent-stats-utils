@@ -237,11 +237,11 @@ def collate_agents():
     general_groups = dict(exec_sql("SELECT name, idgroups FROM `groups` WHERE name IN ('smurfs', 'frogs', 'all');"))
     for agent_id, faction in exec_sql('SELECT idagents, faction FROM agents;'):
         faction = 'frogs' if faction == 'enl' else 'smurfs'
-        sql = 'INSERT OR IGNORE INTO `membership`(idagents, idgroups) VALUES (:agent_id, :id_group);'
-        exec_sql(sql, {"agent_id": agent_id, "id_group": general_groups['all']})
+        exec_sql('INSERT OR IGNORE INTO `membership`(idagents, idgroups) VALUES (:agent_id, :id_group);',
+                 {"agent_id": agent_id, "id_group": general_groups['all']})
 
-        sql = 'INSERT OR IGNORE INTO `membership`(idagents, idgroups) VALUES (:agent_id, :id_group);'
-        exec_sql(sql, {"agent_id": agent_id, "id_group": general_groups[faction]})
+        exec_sql('INSERT OR IGNORE INTO `membership`(idagents, idgroups) VALUES (:agent_id, :id_group);',
+                 {"agent_id": agent_id, "id_group": general_groups[faction]})
 
 def snarf(group=None):
     group_id, group_name = get_groups(group)
@@ -250,10 +250,10 @@ def snarf(group=None):
         results = []
         for group_id, group_name in groups().items():
             idgroups = exec_sql("SELECT `idgroups` FROM `groups` WHERE `url` = :groupid;",
-                                  {"groupid": group_id})
+                                {"groupid": group_id})
             if not idgroups:
                 exec_sql('INSERT INTO `groups` SET `name`=:groupname, `url`=:groupid;',
-                           {"groupname": group_name, "groupid": group_id})
+                         {"groupname": group_name, "groupid": group_id})
             results.append(snarf(group_id)) # getting all recursive and shiz
         collate_agents()
         return '\n'.join(filter(None, results))
@@ -261,10 +261,10 @@ def snarf(group=None):
         logging.info(f'snarfing {group_name}')
         added, removed, flagged, flipped = [], [], [], []
         idgroups = exec_sql('SELECT idgroups FROM `groups` WHERE url=:group_id;',
-                              {"group_id": group_id})[0][0]
+                            {"group_id": group_id})[0][0]
         remaining_roster = [item for sublist in
                             exec_sql('SELECT idagents FROM membership WHERE idgroups=:idgroups;',
-                                       {"idgroups": idgroups})
+                                     {"idgroups": idgroups})
                             for item in sublist] # get the class attendance sheet
 
         logging.info(f'read table: group {group_name}, span now')
@@ -282,10 +282,10 @@ def snarf(group=None):
                 added.append(stat.faction.upper() + ' ' + stat.name)
 
             exec_sql('INSERT OR IGNORE INTO `membership`(idagents, idgroups) VALUES (:agent_id, :idgroups);',
-                       {"agent_id": stat.agent_id, "idgroups": idgroups})
+                     {"agent_id": stat.agent_id, "idgroups": idgroups})
 
             if stat.faction != exec_sql('SELECT faction FROM agents WHERE `name`=:statname;',
-                                          {"statname": stat.name})[0][0]:
+                                        {"statname": stat.name})[0][0]:
                 logging.info(f'Agent flipped: {stat.name} -> {stat.faction.upper()}')
                 flipped.append(f'{stat.name} -> {stat.faction}')
                 exec_sql('UPDATE agents SET faction=:faction WHERE `name`=:name;',
@@ -293,10 +293,10 @@ def snarf(group=None):
 
         if remaining_roster:
             remaining_roster = str(tuple(remaining_roster)).replace(',)',')') # absentees
-            removed = sum(exec_sql(f"SELECT name FROM agents WHERE idagents IN {remaining_roster};".format()), ())
+            removed = sum(exec_sql(f"SELECT name FROM agents WHERE idagents IN {remaining_roster};"), ())
             logging.info(f'Agent(s) removed: {removed}')
-            exec_sql(f"DELETE FROM membership WHERE idagents IN {remaining_roster} and idgroups = :idgroups;".format(),
-                       {"idgroups": idgroups})
+            exec_sql(f"DELETE FROM membership WHERE idagents IN {remaining_roster} and idgroups = :idgroups;",
+                     {"idgroups": idgroups})
 
         output = []
         if added or removed or flagged or flipped:
@@ -316,7 +316,7 @@ def snarf(group=None):
             if flagged:
                 output.append('  Flagged:')
                 for flagged_agent in flagged:
-                    output.append('    {} {}'.format(*flagged_agent))
+                    output.append(f'    {flagged_agent[0]} {flagged_agent[1]}')
                     output.append('      '+'\n      '.join(flagged_agent[2]))
 
         return '\n'.join(output)
