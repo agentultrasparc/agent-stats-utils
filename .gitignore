@@ -4,6 +4,9 @@ known_stats.json
 client_secret.json
 gmail-python-email-send.json
 
+*.db
+*.sqbpro
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
