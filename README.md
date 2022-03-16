@@ -1,5 +1,4 @@
-Agent-stats Utils
-=================
+# Agent-stats Utils
 Handy utilities for managing an ingress agent-stats group.
 
 ## Setting up
