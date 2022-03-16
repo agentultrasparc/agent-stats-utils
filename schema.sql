@@ -1,7 +1,13 @@
+DROP TABLE IF EXISTS `meta`;
 DROP TABLE IF EXISTS `stats`;
 DROP TABLE IF EXISTS `membership`;
 DROP TABLE IF EXISTS `groups`;
 DROP TABLE IF EXISTS `agents`;
+
+CREATE TABLE `meta` (
+  `schemaver` INTEGER NOT NULL,
+);
+INSERT INTO `meta` VALUES ( 2 );
 
 CREATE TABLE `agents` (
   `idagents` INTEGER NOT NULL,

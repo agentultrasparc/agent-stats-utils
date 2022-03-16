@@ -43,4 +43,26 @@ def exec_sql(sql, args={}):
         logging.error(sql)
         raise
 
+def check_schema():
+    meta = exec_sql("SELECT name FROM sqlite_master WHERE type='table' AND name='meta';")
+    if not meta:  # implied version 1, upgrade to 2
+         db = cm.get_conn()
+         db.execute("CREATE TABLE `meta` (`schemaver` INTEGER NOT NULL);");
+         db.execute("INSERT INTO `meta` VALUES ( 2 );");
+
+    ver = exec_sql("SELECT `schemaver` from `meta`;");
+    ver = ver[0][0];
+    logging.info(f'schema version {ver}');
+
+    if ver < 3:
+        db = cm.get_conn()
+        db.executescript("""
+           ALTER TABLE `stats`
+           ADD COLUMN `eos_imprint` BIGINT unsigned DEFAULT NULL;
+           UPDATE meta SET schemaver=3;
+        """);
+        ver = 3;
+        logging.info(f'schema version updated to {ver}');
+
+    # upgrade schema here
 

@@ -18,7 +18,7 @@ from num2words import num2words as n2w  # pip install num2words
 from titlecase import titlecase  # pip install titlecase
 
 from Stat import Stat
-from util import cm, exec_sql, mail
+from util import cm, exec_sql, check_schema, mail
 
 try:
     from extra_stats import compute_extra_categories # see extra_stats.py.example for what this file should look like
@@ -26,6 +26,7 @@ except ImportError:
     compute_extra_categories = lambda data: ({}, [], data)
 
 cm.set_config(dbconfig)
+check_schema()
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(message)s",
