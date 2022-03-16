@@ -253,7 +253,7 @@ def snarf(group=None):
             idgroups = exec_sql("SELECT `idgroups` FROM `groups` WHERE `url` = :groupid;",
                                 {"groupid": group_id})
             if not idgroups:
-                exec_sql('INSERT INTO `groups` SET `name`=:groupname, `url`=:groupid;',
+                exec_sql('INSERT INTO `groups`(name, url) VALUES(:groupname, :groupid);',
                          {"groupname": group_name, "groupid": group_id})
             results.append(snarf(group_id)) # getting all recursive and shiz
         collate_agents()
@@ -734,7 +734,8 @@ def update_group_names(group):
             allgood = False
             print(f'{gid} was named "{db[gid]}" is now "{web[gid]}"')
             if input('Update the database? (y/N) ').lower().startswith('y'):
-                exec_sql(f'UPDATE `groups` SET `name`=:name WHERE url=:url AND `name`=:oldname;', { "name": web[gid], "url": gid, "oldname": db[gid]})
+                exec_sql('UPDATE `groups` SET `name`=:name WHERE `url`=:url AND `name`=:oldname;',
+                         { "name": web[gid], "url": gid, "oldname": db[gid]})
     if allgood:
         print('\nAll group names match\n')
 

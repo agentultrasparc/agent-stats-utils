@@ -246,11 +246,11 @@ class Stat(object):
         if agent_id:
             self.agent_id = agent_id[0][0]
         else:
-            sql = 'INSERT INTO `agents` SET `name`=:name, `faction`=:faction;'
-            exec_sql(sql, {"name": self.name, "faction": self.faction})
+            exec_sql('INSERT INTO `agents`(name, faction) VALUES(:name, :faction);',
+                     {"name": self.name, "faction": self.faction})
             logging.info('new entry created for {} in agents table'.format(self.name))
             self.agent_id = exec_sql("SELECT idagents FROM agents WHERE name = :name;",
-                                       {"name": self.name})[0][0]
+                                     {"name": self.name})[0][0]
 
     @cached_property
     def min_ap(self):
