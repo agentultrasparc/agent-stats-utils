@@ -58,7 +58,6 @@ def check_schema():
             `name` varchar(16) NOT NULL,
             `faction` varchar(3) DEFAULT NULL,
             `apdiff` BIGINT NOT NULL DEFAULT '0',
-            UNIQUE (`idagents`, `name`),
             UNIQUE (`name`)
         );
 

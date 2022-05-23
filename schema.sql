@@ -8,7 +8,6 @@ CREATE TABLE `agents` (
     `name` varchar(16) NOT NULL,
     `faction` varchar(3) DEFAULT NULL,
     `apdiff` BIGINT NOT NULL DEFAULT '0',
-    UNIQUE (`idagents`, `name`),
     UNIQUE (`name`)
 );
 
@@ -18,7 +17,6 @@ CREATE TABLE `groups` (
     `url` varchar(25) DEFAULT NULL,
     UNIQUE (`name`),
     UNIQUE (`url`)
-    UNIQUE (`idgroups`,`name`)
 );
 INSERT INTO `groups` VALUES (1,'all',1),(2,'smurfs',2),(3,'frogs',3);
 
