@@ -173,6 +173,16 @@ def check_schema():
         ver = 3;
         logging.info(f'schema version updated to {ver}');
 
+    if ver < 4:
+        db = cm.get_conn()
+        db.executescript("""
+           ALTER TABLE `stats`
+           ADD COLUMN `urban_ops` BIGINT unsigned DEFAULT NULL;
+           UPDATE meta SET schemaver=4;
+        """);
+        ver = 4;
+        logging.info(f'schema version updated to {ver}');
+
     # upgrade schema here
-    # if ver < 4:
+    # if ver < 5:
     #     db.execute("");

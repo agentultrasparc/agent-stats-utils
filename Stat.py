@@ -10,15 +10,17 @@ today = datetime.date.today()
 sojourner_start = datetime.date(2015, 3, 5)
 game_start = datetime.date(2012, 11, 15)
 
-fields = '''name, date, flag, min_ap, lifetime_ap, recursions, ap, level, explorer,
-discoverer, seer, recon, trekker, builder, connector, mind_controller, illuminator,
-recharger, liberator, pioneer, engineer, purifier, guardian, specops, missionday,
-nl_1331_meetups, cassandra_neutralizer, hacker, translator, sojourner, recruiter,
+fields = '''name, date, flag, min_ap, lifetime_ap, recursions, ap, level,
+explorer, discoverer, seer, recon, trekker, builder, connector,
+mind_controller, illuminator, recharger, liberator, pioneer, engineer,
+purifier, guardian, specops, missionday, nl_1331_meetups,
+cassandra_neutralizer, hacker, translator, sojourner, recruiter,
 collector, binder, country_master, neutralizer, disruptor, salvator, smuggler,
-link_master, controller, field_master, magnusbuilder, prime_challenge, stealth_ops,
-opr_live, ocf, intel_ops, ifs, dark_xm_threat, myriad_hack, aurora_glyph, umbra_deploy,
-didact_field, drone_explorer, drone_distance, drone_recalls, drone_sender, maverick,
-scout_controller, crafter, bb_combatant, hack_the_world202104, epoch, matryoshka_links,
+link_master, controller, field_master, magnusbuilder, prime_challenge,
+stealth_ops, opr_live, ocf, intel_ops, urban_ops, ifs, dark_xm_threat,
+myriad_hack, aurora_glyph, umbra_deploy, didact_field, drone_explorer,
+drone_distance, drone_recalls, drone_sender, maverick, scout_controller,
+crafter, bb_combatant, hack_the_world202104, epoch, matryoshka_links,
 operation_sentinel, second_sunday, eos_imprint'''
 
 Row = namedtuple('Row', fields)
@@ -78,6 +80,7 @@ class Stat(object):
                  `stats`.`opr_live`,
                  `stats`.`ocf`,
                  `stats`.`intel_ops`,
+                 `stats`.`urban_ops`,
                  `stats`.`ifs`,
                  `stats`.`dark_xm_threat`,
                  `stats`.`myriad_hack`,
@@ -150,6 +153,7 @@ class Stat(object):
         self.opr_live = row.opr_live
         self.ocf = row.ocf
         self.intel_ops = row.intel_ops
+        self.urban_ops = row.urban_ops
         self.ifs = row.ifs
         self.drone_explorer = row.drone_explorer
         self.drone_distance = row.drone_distance
@@ -227,6 +231,7 @@ class Stat(object):
         self.opr_live = row.get('opr_live', 0)
         self.ocf = row.get('ocf', 0)
         self.intel_ops = row.get('intel_ops', 0)
+        self.urban_ops = row.get('urban_ops', 0)
         self.ifs = row.get('ifs', 0)
         self.drone_explorer = row.get('drone_explorer', 0)
         self.drone_distance = row.get('drone_distance', 0)
@@ -398,24 +403,29 @@ class Stat(object):
         #    print(name, value)
 
         sql = '''
-        INSERT INTO stats(idagents, `date`, `level`, ap, lifetime_ap, recursions, explorer,
-        discoverer, seer, recon, scout, trekker, builder, connector, `mind-controller`,
-        illuminator, recharger, liberator, pioneer, engineer, purifier, guardian,
-        specops, missionday, `nl-1331-meetups`, hacker, translator, sojourner, recruiter,
-        collector, binder, `country-master`, neutralizer, disruptor, salvator,
-        smuggler, `link-master`, controller, `field-master`, prime_challenge, stealth_ops,
-        opr_live, ocf, intel_ops, ifs, drone_explorer, drone_distance, drone_recalls,
-        drone_sender, maverick, scout_controller, crafter, bb_combatant, epoch,
-        operation_sentinel, second_sunday, eos_imprint, flag, `min-ap`)
-        VALUES (:agent_id, :date, :level, :ap, :lifetime_ap, :recursions, :explorer,
-        :discoverer, :seer, :recon, :scout, :trekker, :builder, :connector, :mind_controller,
-        :illuminator, :recharger, :liberator, :pioneer, :engineer, :purifier, :guardian,
-        :specops, :missionday, :nl_1331_meetups, :hacker, :translator, :sojourner, :recruiter,
-        :collector, :binder, :country_master, :neutralizer, :disruptor, :salvator,
-        :smuggler, :link_master, :controller, :field_master, :prime_challenge, :stealth_ops,
-        :opr_live, :ocf, :intel_ops, :ifs, :drone_explorer, :drone_distance, :drone_recalls,
-        :drone_sender, :maverick, :scout_controller, :crafter, :bb_combatant, :epoch,
-        :operation_sentinel, :second_sunday, :eos_imprint, :flag, :min_ap)
+        INSERT INTO stats(idagents, `date`, `level`, ap, lifetime_ap,
+            recursions, explorer, discoverer, seer, recon, scout, trekker,
+            builder, connector, `mind-controller`, illuminator, recharger,
+            liberator, pioneer, engineer, purifier, guardian, specops,
+            missionday, `nl-1331-meetups`, hacker, translator, sojourner,
+            recruiter, collector, binder, `country-master`, neutralizer,
+            disruptor, salvator, smuggler, `link-master`, controller,
+            `field-master`, prime_challenge, stealth_ops, opr_live, ocf,
+            intel_ops, urban_ops, ifs, drone_explorer, drone_distance,
+            drone_recalls, drone_sender, maverick, scout_controller,
+            crafter, bb_combatant, epoch, operation_sentinel, second_sunday,                eos_imprint, flag, `min-ap`)
+        VALUES (:agent_id, :date, :level, :ap, :lifetime_ap, :recursions,
+            :explorer, :discoverer, :seer, :recon, :scout, :trekker,
+            :builder, :connector, :mind_controller, :illuminator, :recharger,
+            :liberator, :pioneer, :engineer, :purifier, :guardian, :specops,
+            :missionday, :nl_1331_meetups, :hacker, :translator, :sojourner,
+            :recruiter, :collector, :binder, :country_master, :neutralizer,
+            :disruptor, :salvator, :smuggler, :link_master, :controller,
+            :field_master, :prime_challenge, :stealth_ops, :opr_live, :ocf,
+            :intel_ops, :urban_ops, :ifs, :drone_explorer, :drone_distance,
+            :drone_recalls, :drone_sender, :maverick, :scout_controller,
+            :crafter, :bb_combatant, :epoch, :operation_sentinel,
+            :second_sunday, :eos_imprint, :flag, :min_ap)
         ON CONFLICT (idagents, `date`) DO UPDATE SET
         `level`=:level,
         ap=:ap,
@@ -459,6 +469,7 @@ class Stat(object):
         opr_live=:opr_live,
         ocf=:ocf,
         intel_ops=:intel_ops,
+        urban_ops=:urban_ops,
         ifs=:ifs,
         drone_explorer=:drone_explorer,
         drone_distance=:drone_distance,

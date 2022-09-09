@@ -75,6 +75,7 @@ CREATE TABLE `stats` (
     `opr_live` BIGINT unsigned DEFAULT NULL,
     `ocf` BIGINT unsigned DEFAULT NULL,
     `intel_ops` BIGINT unsigned DEFAULT NULL,
+    `urban_ops` BIGINT unsigned DEFAULT NULL,
     `ifs` BIGINT unsigned DEFAULT NULL,
     `dark_xm_threat` BIGINT unsigned DEFAULT NULL,
     `myriad_hack` BIGINT unsigned DEFAULT NULL,
