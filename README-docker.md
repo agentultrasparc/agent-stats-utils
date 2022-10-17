@@ -53,6 +53,20 @@ Pass the -a option to have the output attached as a .txt file as well.
 weekly --group 'Our Agent Stats Group' --subject "Our Group Leaderboard Weekly Results" --mail user@example.com
 ```
 
+### Slack
+
+Any command that has text output can have that output redirected to a
+slack channel with the --slack option at the end of the options.
+Provide a space-separated list of slack channel identifiers after the
+--slack option. See [Slack FAQ
+channels-ID](https://docs.slack.dev/faq/#channels-ID) for instructions
+on how to find your channel IDs.
+
+```
+weekly --group 'Our Agent Stats Group' --subject "Our Group Leaderboard Weekly Results" --slack C1234567890 GAAAABBBB
+```
+Pass the -a option to have the output attached as a .txt file as well.
+
 ## Features
 
 ### snarf

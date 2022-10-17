@@ -20,6 +20,7 @@ from titlecase import titlecase  # pip install titlecase
 from Stat import Stat
 from util import cm, exec_sql, check_schema
 from mail import mail
+from slack import slack_post
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(message)s",
@@ -785,13 +786,14 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--attach', action='store_true', help='also attach email body as a txt file to the email')
     parser.add_argument('-e', '--extension', default='txt', help='extension of template you want to use')
     parser.add_argument('-l', '--log', default='INFO', help='logging level')
+    parser.add_argument('-c', '--slack', nargs='*', help='post to slack channel')
+
+    args = parser.parse_args()
 
     numeric_level = getattr(logging, args.log.upper(), None)
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.log)
     logging.basicConfig(level=numeric_level)
-
-    args = parser.parse_args()
 
     try:
         result = actions.get(args.action)(validate_group(args.group))
@@ -803,13 +805,24 @@ if __name__ == '__main__':
             subject = args.action+' '+args.group if not args.subject else args.subject
             mail([args.mail[0]], subject, str(sys.exc_info()[0]), host=True)
             logging.error('CRASHED and email sent')
+            sys.exit(1)
+    if not result:
+        logging.error('Empty result')
+        sys.exit(1)
+
+    if not args.mail and not args.slack:
+        print(result) # chcp 65001
     else:
-        if result:
-            if not args.mail:
-                print(result) # chcp 65001
-            else:
-                if not args.group: args.group=''
-                subject = args.action+' '+args.group+' '+args.extension if not args.subject else args.subject
-                mail(args.mail, subject, result, args.attach)
-                logging.info('email sent')
-        logging.info('Done')
+        if not args.group: args.group=''
+        subject = args.action+' '+args.group+' '+args.extension if not args.subject else args.subject
+
+        if args.slack:
+            today = datetime.datetime.now().strftime("%Y-%m-%d")
+            slack_post(f'stats_{args.action}_{today}', result, args.slack, subject)
+            logging.info('slack posted')
+
+        if args.mail:
+            mail(args.mail, subject, result, args.attach)
+            logging.info('email sent')
+
+    logging.info('Done')
