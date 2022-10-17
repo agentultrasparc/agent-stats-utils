@@ -21,6 +21,11 @@ from Stat import Stat
 from util import cm, exec_sql, check_schema
 from mail import mail
 
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s %(message)s",
+                    datefmt="%H:%M:%S")
+logging.getLogger("requests").setLevel(logging.WARNING)
+
 try:
     from extra_stats import compute_extra_categories # see extra_stats.py.example for what this file should look like
 except ImportError:
@@ -28,11 +33,6 @@ except ImportError:
 
 cm.set_config(dbconfig)
 check_schema()
-
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s %(message)s",
-                    datefmt="%H:%M:%S")
-logging.getLogger("requests").setLevel(logging.WARNING)
 
 s = requests.Session()
 s.mount('https://', HTTPAdapter(max_retries=3))
@@ -784,6 +784,12 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--subject', help='optional email subject')
     parser.add_argument('-a', '--attach', action='store_true', help='also attach email body as a txt file to the email')
     parser.add_argument('-e', '--extension', default='txt', help='extension of template you want to use')
+    parser.add_argument('-l', '--log', default='INFO', help='logging level')
+
+    numeric_level = getattr(logging, args.log.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.log)
+    logging.basicConfig(level=numeric_level)
 
     args = parser.parse_args()
 
