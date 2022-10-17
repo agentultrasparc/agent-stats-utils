@@ -1,4 +1,3 @@
-from mail import mail
 import sqlite3
 import logging
 
