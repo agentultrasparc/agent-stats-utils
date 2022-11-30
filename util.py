@@ -183,6 +183,20 @@ def check_schema():
         ver = 4;
         logging.info(f'schema version updated to {ver}');
 
+    if ver < 5:
+        db = cm.get_conn()
+        db.executescript("""
+           ALTER TABLE `stats`
+           ADD COLUMN `red-disruptor` BIGINT UNSIGNED DEFAULT NULL;
+           ALTER TABLE `stats`
+           ADD COLUMN `red-purifier` BIGINT UNSIGNED DEFAULT NULL;
+           ALTER TABLE `stats`
+           ADD COLUMN `red-neutralizer` BIGINT UNSIGNED DEFAULT NULL;
+           UPDATE meta SET schemaver=5;
+        """);
+        ver = 5;
+        logging.info(f'schema version updated to {ver}');
+
     # upgrade schema here
-    # if ver < 5:
+    # if ver < 6:
     #     db.execute("");

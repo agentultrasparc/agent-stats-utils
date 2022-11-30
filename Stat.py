@@ -20,7 +20,8 @@ link_master, controller, field_master, magnusbuilder, prime_challenge,
 stealth_ops, opr_live, ocf, intel_ops, urban_ops, ifs, dark_xm_threat,
 myriad_hack, aurora_glyph, umbra_deploy, didact_field, drone_explorer,
 drone_distance, drone_recalls, drone_sender, maverick, scout_controller,
-crafter, bb_combatant, hack_the_world202104, epoch, matryoshka_links,
+crafter, bb_combatant, red_disruptor, red_purifier, red_neutralizer,
+hack_the_world202104, epoch, matryoshka_links,
 operation_sentinel, second_sunday, eos_imprint'''
 
 Row = namedtuple('Row', fields)
@@ -95,6 +96,9 @@ class Stat(object):
                  `stats`.`scout_controller`,
                  `stats`.`crafter`,
                  `stats`.`bb_combatant`,
+                 `stats`.`self.red_disruptor`,
+                 `stats`.`self.red_purifier`,
+                 `stats`.`self.red_neutralizer`,
                  `stats`.`hack_the_world202104`,
                  `stats`.`epoch`,
                  `stats`.`matryoshka_links`,
@@ -163,6 +167,9 @@ class Stat(object):
         self.scout_controller = row.scout_controller
         self.crafter = row.crafter
         self.bb_combatant = row.bb_combatant
+        self.red_disruptor = row.red_disruptor
+        self.red_purifier = row.red_purifier
+        self.red_neutralizer = row.red_neutralizer
         self.epoch = row.epoch
         self.matryoshka_links = row.matryoshka_links
         self.operation_sentinel = row.operation_sentinel
@@ -241,6 +248,9 @@ class Stat(object):
         self.scout_controller = row.get('scout_controller', 0)
         self.crafter = row.get('crafter', 0)
         self.bb_combatant = row.get('bb_combatant', 0)
+        self.red_disruptor = row.get('red-disruptor', 0)
+        self.red_purifier = row.get('red-purifier', 0)
+        self.red_neutralizer = row.get('red-neutralizer', 0)
         self.epoch = row.get('epoch', 0)
         self.operation_sentinel = row.get('operation_sentinel', 0)
         self.second_sunday = row.get('second_sunday', 0)
@@ -415,7 +425,9 @@ class Stat(object):
             `field-master`, prime_challenge, stealth_ops, opr_live, ocf,
             intel_ops, urban_ops, ifs, drone_explorer, drone_distance,
             drone_recalls, drone_sender, maverick, scout_controller,
-            crafter, bb_combatant, epoch, operation_sentinel, second_sunday,                eos_imprint, flag, `min-ap`)
+            crafter, bb_combatant, `red-disruptor`, `red-purifier`,
+            `red-neutralizer`, epoch, operation_sentinel, second_sunday,
+            eos_imprint, flag, `min-ap`)
         VALUES (:agent_id, :date, :level, :ap, :lifetime_ap, :recursions,
             :explorer, :discoverer, :seer, :recon, :scout, :trekker,
             :builder, :connector, :mind_controller, :illuminator, :recharger,
@@ -426,7 +438,8 @@ class Stat(object):
             :field_master, :prime_challenge, :stealth_ops, :opr_live, :ocf,
             :intel_ops, :urban_ops, :ifs, :drone_explorer, :drone_distance,
             :drone_recalls, :drone_sender, :maverick, :scout_controller,
-            :crafter, :bb_combatant, :epoch, :operation_sentinel,
+            :crafter, :bb_combatant, :red_disruptor, :red_purifier,
+            :red_neutralizer, :epoch, :operation_sentinel,
             :second_sunday, :eos_imprint, :flag, :min_ap)
         ON CONFLICT (idagents, `date`) DO UPDATE SET
         `level`=:level,
@@ -481,6 +494,9 @@ class Stat(object):
         scout_controller=:scout_controller,
         crafter=:crafter,
         bb_combatant=:bb_combatant,
+        `red-disruptor`=:red_disruptor,
+        `red-purifier`=:red_purifier,
+        `red-neutralizer`=:red_neutralizer,
         epoch=:epoch,
         operation_sentinel=:operation_sentinel,
         second_sunday=:second_sunday,
