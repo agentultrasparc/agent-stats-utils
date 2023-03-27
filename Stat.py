@@ -382,8 +382,8 @@ class Stat(object):
             reasons.append( 'hacker:translator %s < %s/15' % (self.hacker, self.translator) )
         if self.seer > self.discoverer:
             reasons.append( 'seer:discoverer %s > %s' % (self.seer, self.discoverer) )
-        
-        # there are multiple crafting capsules now. this signal is very weak even if recalibrated
+
+        # there can be multiple crafting capsules now. this signal is very weak even if recalibrated
         # if (self.crafter*2) > self.trekker:
         #     reasons.append( 'trekker:crafter %s < %s*2' % (self.trekker, self.crafter) )
 
@@ -407,12 +407,6 @@ class Stat(object):
 
     def save(self):
         self.flag, self.min_ap # hack to make sure these are in the cache
-
-        # for fld in a._fields:
-        # print fld
-        # print getattr(a, fld)
-        # for name, value in a_namedtuple._asdict().items()
-        #    print(name, value)
 
         sql = '''
         INSERT INTO stats(idagents, `date`, `level`, ap, lifetime_ap,
