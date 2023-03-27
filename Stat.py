@@ -11,7 +11,7 @@ sojourner_start = datetime.date(2015, 3, 5)
 game_start = datetime.date(2012, 11, 15)
 
 fields = '''name, date, flag, min_ap, lifetime_ap, recursions, ap, level,
-explorer, discoverer, seer, recon, trekker, builder, connector,
+explorer, discoverer, seer, recon, scout, trekker, builder, connector,
 mind_controller, illuminator, recharger, liberator, pioneer, engineer,
 purifier, guardian, specops, missionday, nl_1331_meetups,
 cassandra_neutralizer, hacker, translator, sojourner, recruiter,
