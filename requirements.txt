@@ -1,4 +1,4 @@
-requests==2.27.1
+requests==2.31.0
 num2words==0.5.10
 titlecase==2.3
 ftfy==6.1.1
