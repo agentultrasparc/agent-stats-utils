@@ -29,9 +29,9 @@ def create_code(new_stats):
 #https://www.agent-stats.com/faq.php
 #copy the new stat(s) from the table and paste them here as is
 
-a = '''urban_ops
-Urban Ops Missions
-	1	3	6	10	20'''
+a = '''reclaimer
+Machina Portals Reclaimed
+	100 	1,000 	5,000 	15,000 	40,000'''
 
 it = iter(a.split('\n'))
 

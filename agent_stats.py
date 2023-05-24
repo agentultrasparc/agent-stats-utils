@@ -112,6 +112,7 @@ def get_stats(group_id, time_span='now', number=10, submitters=[0]):
                    'red-disruptor': '(Machina Links Destroyed)',
                    'red-purifier': '(Machina Resonators Destroyed)',
                    'red-neutralizer': '(Machina Portals Neutralized)',
+                   'reclaimer': '(Machina Portals Reclaimed)',
                    'epoch': '(Completed Hackstreaks)',
                    'second_sunday': '(Second Sunday Events)',
                    'eos_imprint': '(EOS Points Earned)',
@@ -341,6 +342,7 @@ def get_badges(data):
                   'illuminator': [5000, 50000, 250000, 1000000, 4000000],
                   'recharger': [100000, 1000000, 3000000, 10000000, 25000000],
                   'liberator': [100, 1000, 5000, 15000, 40000],
+                  'reclaimer': [100, 1000, 5000, 15000, 40000],
                   'pioneer': [20, 200, 1000, 5000, 20000],
                   'engineer': [150, 1500, 5000, 20000, 50000],
                   'purifier': [2000, 10000, 30000, 100000, 300000],
@@ -418,6 +420,7 @@ def summary(group='all', days=7):
                'illuminator',
                'recharger',
                'liberator',
+               'reclaimer',
                'pioneer',
                'engineer',
                'purifier',
@@ -453,14 +456,14 @@ def summary(group='all', days=7):
     sql_before = f'''SELECT x.name, s.`date`, `level`, ap, explorer, discoverer,
                      seer, recon, scout, trekker, builder, connector,
                      `mind-controller`, illuminator, recharger,
-                     liberator, pioneer, engineer, purifier, specops, missionday,
-                     `nl-1331-meetups`, `cassandra-neutralizer`,
-                     hacker, translator, sojourner, recruiter, magnusbuilder,
-                     recursions, prime_challenge, stealth_ops,
-                     opr_live, ocf, intel_ops, urban_ops, ifs, maverick,
-                     dark_xm_threat, myriad_hack, aurora_glyph, umbra_deploy,
-                     didact_field, scout_controller, epoch, second_sunday,
-                     eos_imprint
+                     liberator, reclaimer, pioneer, engineer, purifier,
+                     specops, missionday, `nl-1331-meetups`,
+                     `cassandra-neutralizer`, hacker, translator, sojourner,
+                     recruiter, magnusbuilder, recursions, prime_challenge,
+                     stealth_ops, opr_live, ocf, intel_ops, urban_ops, ifs,
+                     maverick, dark_xm_threat, myriad_hack, aurora_glyph,
+                     umbra_deploy, didact_field, scout_controller, epoch,
+                     second_sunday, eos_imprint
                      FROM (
                          SELECT a.name name, s.idagents id, MAX(s.date) AS date
                          FROM agents a, stats s, membership m, `groups` g
@@ -482,14 +485,14 @@ def summary(group='all', days=7):
     sql_now = f'''SELECT x.name, s.`date`, `level`, ap, explorer, discoverer,
                   seer, recon, scout, trekker, builder, connector,
                   `mind-controller` mind_controller, illuminator, recharger,
-                  liberator, pioneer, engineer, purifier, specops, missionday,
-                  `nl-1331-meetups` nl_1331_meetups, `cassandra-neutralizer`,
-                  hacker, translator, sojourner, recruiter, magnusbuilder,
-                  recursions, prime_challenge, stealth_ops,
-                  opr_live, ocf, intel_ops, urban_ops, ifs, maverick,
-                  dark_xm_threat, myriad_hack, aurora_glyph, umbra_deploy,
-                  didact_field, scout_controller, epoch, second_sunday,
-                  eos_imprint
+                  liberator, reclaimer, pioneer, engineer, purifier, specops,
+                  missionday, `nl-1331-meetups` nl_1331_meetups,
+                  `cassandra-neutralizer`, hacker, translator, sojourner,
+                  recruiter, magnusbuilder, recursions, prime_challenge,
+                  stealth_ops, opr_live, ocf, intel_ops, urban_ops, ifs,
+                  maverick, dark_xm_threat, myriad_hack, aurora_glyph,
+                  umbra_deploy, didact_field, scout_controller, epoch,
+                  second_sunday, eos_imprint
                      FROM (
                          SELECT a.name name, s.idagents id, MAX(s.date) AS date
                          FROM agents a, stats s, membership m, `groups` g

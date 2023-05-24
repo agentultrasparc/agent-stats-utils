@@ -197,6 +197,16 @@ def check_schema():
         ver = 5;
         logging.info(f'schema version updated to {ver}');
 
+    if ver < 6:
+        db = cm.get_conn()
+        db.executescript("""
+           ALTER TABLE `stats`
+           ADD COLUMN `reclaimer` BIGINT unsigned DEFAULT NULL;
+           UPDATE meta SET schemaver=6;
+        """);
+        ver = 6;
+        logging.info(f'schema version updated to {ver}');
+
     # upgrade schema here
-    # if ver < 6:
+    # if ver < 7:
     #     db.execute("");

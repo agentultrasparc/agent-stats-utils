@@ -21,7 +21,7 @@ stealth_ops, opr_live, ocf, intel_ops, urban_ops, ifs, dark_xm_threat,
 myriad_hack, aurora_glyph, umbra_deploy, didact_field, drone_explorer,
 drone_distance, drone_recalls, drone_sender, maverick, scout_controller,
 crafter, bb_combatant, red_disruptor, red_purifier, red_neutralizer,
-hack_the_world202104, epoch, matryoshka_links,
+reclaimer, hack_the_world202104, epoch, matryoshka_links,
 operation_sentinel, second_sunday, eos_imprint'''
 
 Row = namedtuple('Row', fields)
@@ -170,6 +170,7 @@ class Stat(object):
         self.red_disruptor = row.red_disruptor
         self.red_purifier = row.red_purifier
         self.red_neutralizer = row.red_neutralizer
+        self.reclaimer = row.reclaimer
         self.epoch = row.epoch
         self.matryoshka_links = row.matryoshka_links
         self.operation_sentinel = row.operation_sentinel
@@ -251,6 +252,7 @@ class Stat(object):
         self.red_disruptor = row.get('red-disruptor', 0)
         self.red_purifier = row.get('red-purifier', 0)
         self.red_neutralizer = row.get('red-neutralizer', 0)
+        self.reclaimer = row.get('reclaimer', 0)
         self.epoch = row.get('epoch', 0)
         self.operation_sentinel = row.get('operation_sentinel', 0)
         self.second_sunday = row.get('second_sunday', 0)
@@ -420,8 +422,8 @@ class Stat(object):
             intel_ops, urban_ops, ifs, drone_explorer, drone_distance,
             drone_recalls, drone_sender, maverick, scout_controller,
             crafter, bb_combatant, `red-disruptor`, `red-purifier`,
-            `red-neutralizer`, epoch, operation_sentinel, second_sunday,
-            eos_imprint, flag, `min-ap`)
+            `red-neutralizer`, reclaimer, epoch, operation_sentinel,
+            second_sunday, eos_imprint, flag, `min-ap`)
         VALUES (:agent_id, :date, :level, :ap, :lifetime_ap, :recursions,
             :explorer, :discoverer, :seer, :recon, :scout, :trekker,
             :builder, :connector, :mind_controller, :illuminator, :recharger,
@@ -433,7 +435,7 @@ class Stat(object):
             :intel_ops, :urban_ops, :ifs, :drone_explorer, :drone_distance,
             :drone_recalls, :drone_sender, :maverick, :scout_controller,
             :crafter, :bb_combatant, :red_disruptor, :red_purifier,
-            :red_neutralizer, :epoch, :operation_sentinel,
+            :red_neutralizer, :reclaimer, :epoch, :operation_sentinel,
             :second_sunday, :eos_imprint, :flag, :min_ap)
         ON CONFLICT (idagents, `date`) DO UPDATE SET
         `level`=:level,
@@ -491,6 +493,7 @@ class Stat(object):
         `red-disruptor`=:red_disruptor,
         `red-purifier`=:red_purifier,
         `red-neutralizer`=:red_neutralizer,
+        reclaimer=:reclaimer,
         epoch=:epoch,
         operation_sentinel=:operation_sentinel,
         second_sunday=:second_sunday,
