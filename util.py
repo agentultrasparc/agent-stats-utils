@@ -207,6 +207,16 @@ def check_schema():
         ver = 6;
         logging.info(f'schema version updated to {ver}');
 
+    if ver < 7:
+        db = cm.get_conn()
+        db.executescript("""
+           ALTER TABLE `stats`
+           ADD COLUMN `overclocker` BIGINT unsigned DEFAULT NULL;
+           UPDATE meta SET schemaver=7;
+        """);
+        ver = 7;
+        logging.info(f'schema version updated to {ver}');
+
     # upgrade schema here
-    # if ver < 7:
+    # if ver < 8:
     #     db.execute("");

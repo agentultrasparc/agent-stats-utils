@@ -1,12 +1,12 @@
 def create_code(new_stats):
     templates = {
-        'schema.sql > create table': "  `{statname}` bigint(20) unsigned DEFAULT NULL,\n",
-        'schema.sql > stored procedure': "  `stats`.`{statname}`,\n",
+        'util.py > check_schema': "  ADD COLUMN `{statname}` BIGINT unsigned DEFAULT NULL,\n",
         'Stat.py > fields': ", {statnodash}",
         'Stat.py > db_load()': "        self.{statnodash} = row.{statnodash}\n",
         'Stat.py > table_load()': "        self.{statnodash} = row.get('{statname}', 0)\n",
-        'Stat.py > save(1)': "                     {statbacktick}='{{{statnodash}}}',\n",
-        'Stat.py > save(2)': "                                         {statbacktick}='{{{statnodash}}}',\n",
+        'Stat.py > save(1)': "                     {statbacktick},\n",
+        'Stat.py > save(2)': "                     :{statbacktick},\n",
+        'Stat.py > save(3)': "                     {statbacktick}=:{statbacktick}',\n",
         'agent_stats.py > get_stats() > definitions': "                   '{statname}': '({description})',\n",
         'agent_stats.py > get_badges() > categories (or 3 tier categories) (skip if not officialy badged stat)': "                  '{statname}': [{tiers}],\n",
         'agent_stats.py > summary() > headers (skip if not officialy badged stat)': "               '{statnodash}',\n",
@@ -29,9 +29,9 @@ def create_code(new_stats):
 #https://www.agent-stats.com/faq.php
 #copy the new stat(s) from the table and paste them here as is
 
-a = '''reclaimer
-Machina Portals Reclaimed
-	100 	1,000 	5,000 	15,000 	40,000'''
+a = '''overclocker
+Overclock Hack Points
+	750	1,250	2,250	5,500	7,500'''
 
 it = iter(a.split('\n'))
 

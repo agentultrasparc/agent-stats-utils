@@ -22,7 +22,7 @@ myriad_hack, aurora_glyph, umbra_deploy, didact_field, drone_explorer,
 drone_distance, drone_recalls, drone_sender, maverick, scout_controller,
 crafter, bb_combatant, red_disruptor, red_purifier, red_neutralizer,
 reclaimer, hack_the_world202104, epoch, matryoshka_links,
-operation_sentinel, second_sunday, eos_imprint'''
+operation_sentinel, second_sunday, eos_imprint, overclocker'''
 
 Row = namedtuple('Row', fields)
 
@@ -176,6 +176,7 @@ class Stat(object):
         self.operation_sentinel = row.operation_sentinel
         self.second_sunday = row.second_sunday
         self.eos_imprint = row.eos_imprint
+        self.overclocker = row.overclocker
 
         # obsolete stats
         self.hack_the_world202104 = row.hack_the_world202104
@@ -257,6 +258,7 @@ class Stat(object):
         self.operation_sentinel = row.get('operation_sentinel', 0)
         self.second_sunday = row.get('second_sunday', 0)
         self.eos_imprint = row.get('eos_imprint', 0)
+        self.overclocker = row.get('overclocker', 0)
 
         agent_id = exec_sql("SELECT idagents FROM agents WHERE name = :name;",
                               {"name":  self.name})
@@ -415,28 +417,30 @@ class Stat(object):
             recursions, explorer, discoverer, seer, recon, scout, trekker,
             builder, connector, `mind-controller`, illuminator, recharger,
             liberator, pioneer, engineer, purifier, guardian, specops,
-            missionday, `nl-1331-meetups`, hacker, translator, sojourner,
-            recruiter, collector, binder, `country-master`, neutralizer,
-            disruptor, salvator, smuggler, `link-master`, controller,
-            `field-master`, prime_challenge, stealth_ops, opr_live, ocf,
-            intel_ops, urban_ops, ifs, drone_explorer, drone_distance,
-            drone_recalls, drone_sender, maverick, scout_controller,
-            crafter, bb_combatant, `red-disruptor`, `red-purifier`,
-            `red-neutralizer`, reclaimer, epoch, operation_sentinel,
-            second_sunday, eos_imprint, flag, `min-ap`)
+            missionday, `nl-1331-meetups`, hacker, translator,
+            sojourner, recruiter, collector, binder, `country-master`,
+            neutralizer, disruptor, salvator, smuggler, `link-master`,
+            controller, `field-master`, prime_challenge, stealth_ops,
+            opr_live, ocf, intel_ops, urban_ops, ifs, drone_explorer,
+            drone_distance, drone_recalls, drone_sender, maverick,
+            scout_controller, crafter, bb_combatant, `red-disruptor`,
+            `red-purifier`, `red-neutralizer`, reclaimer, epoch,
+            operation_sentinel, second_sunday, eos_imprint, overclocker,
+            flag, `min-ap`)
         VALUES (:agent_id, :date, :level, :ap, :lifetime_ap, :recursions,
             :explorer, :discoverer, :seer, :recon, :scout, :trekker,
             :builder, :connector, :mind_controller, :illuminator, :recharger,
             :liberator, :pioneer, :engineer, :purifier, :guardian, :specops,
-            :missionday, :nl_1331_meetups, :hacker, :translator, :sojourner,
-            :recruiter, :collector, :binder, :country_master, :neutralizer,
-            :disruptor, :salvator, :smuggler, :link_master, :controller,
-            :field_master, :prime_challenge, :stealth_ops, :opr_live, :ocf,
-            :intel_ops, :urban_ops, :ifs, :drone_explorer, :drone_distance,
-            :drone_recalls, :drone_sender, :maverick, :scout_controller,
-            :crafter, :bb_combatant, :red_disruptor, :red_purifier,
-            :red_neutralizer, :reclaimer, :epoch, :operation_sentinel,
-            :second_sunday, :eos_imprint, :flag, :min_ap)
+            :missionday, :nl_1331_meetups, :hacker, :translator,
+            :sojourner, :recruiter, :collector, :binder, :country_master,
+            :neutralizer, :disruptor, :salvator, :smuggler, :link_master,
+            :controller, :field_master, :prime_challenge, :stealth_ops,
+            :opr_live, :ocf, :intel_ops, :urban_ops, :ifs, :drone_explorer,
+            :drone_distance, :drone_recalls, :drone_sender, :maverick,
+            :scout_controller, :crafter, :bb_combatant, :red_disruptor,
+            :red_purifier, :red_neutralizer, :reclaimer, :epoch,
+            :operation_sentinel, :second_sunday, :eos_imprint, :overclocker,
+            :flag, :min_ap)
         ON CONFLICT (idagents, `date`) DO UPDATE SET
         `level`=:level,
         ap=:ap,
@@ -497,7 +501,8 @@ class Stat(object):
         epoch=:epoch,
         operation_sentinel=:operation_sentinel,
         second_sunday=:second_sunday,
-	eos_imprint=:eos_imprint,
+        eos_imprint=:eos_imprint,
+        overclocker=:overclocker,
         flag=:flag,
         `min-ap`=:min_ap;
         '''
