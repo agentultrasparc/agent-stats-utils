@@ -217,6 +217,16 @@ def check_schema():
         ver = 7;
         logging.info(f'schema version updated to {ver}');
 
+    if ver < 8:
+        db = cm.get_conn()
+        db.executescript("""
+           ALTER TABLE `stats`
+           ADD COLUMN `operation_chronos` BIGINT unsigned DEFAULT NULL;
+           UPDATE meta SET schemaver=8;
+        """);
+        ver = 8;
+        logging.info(f'schema version updated to {ver}');
+
     # upgrade schema here
-    # if ver < 8:
+    # if ver < 9:
     #     db.execute("");

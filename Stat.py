@@ -22,7 +22,8 @@ myriad_hack, aurora_glyph, umbra_deploy, didact_field, drone_explorer,
 drone_distance, drone_recalls, drone_sender, maverick, scout_controller,
 crafter, bb_combatant, red_disruptor, red_purifier, red_neutralizer,
 reclaimer, hack_the_world202104, epoch, matryoshka_links,
-operation_sentinel, second_sunday, eos_imprint, overclocker'''
+operation_sentinel, second_sunday, eos_imprint, overclocker,
+operation_chronos'''
 
 Row = namedtuple('Row', fields)
 
@@ -177,6 +178,7 @@ class Stat(object):
         self.second_sunday = row.second_sunday
         self.eos_imprint = row.eos_imprint
         self.overclocker = row.overclocker
+        self.operation_chronos = row.operation_chronos
 
         # obsolete stats
         self.hack_the_world202104 = row.hack_the_world202104
@@ -259,6 +261,7 @@ class Stat(object):
         self.second_sunday = row.get('second_sunday', 0)
         self.eos_imprint = row.get('eos_imprint', 0)
         self.overclocker = row.get('overclocker', 0)
+        self.operation_chronos = row.get('operation_chronos', 0)
 
         agent_id = exec_sql("SELECT idagents FROM agents WHERE name = :name;",
                               {"name":  self.name})
@@ -426,7 +429,7 @@ class Stat(object):
             scout_controller, crafter, bb_combatant, `red-disruptor`,
             `red-purifier`, `red-neutralizer`, reclaimer, epoch,
             operation_sentinel, second_sunday, eos_imprint, overclocker,
-            flag, `min-ap`)
+            operation_chronos, flag, `min-ap`)
         VALUES (:agent_id, :date, :level, :ap, :lifetime_ap, :recursions,
             :explorer, :discoverer, :seer, :recon, :scout, :trekker,
             :builder, :connector, :mind_controller, :illuminator, :recharger,
@@ -440,7 +443,7 @@ class Stat(object):
             :scout_controller, :crafter, :bb_combatant, :red_disruptor,
             :red_purifier, :red_neutralizer, :reclaimer, :epoch,
             :operation_sentinel, :second_sunday, :eos_imprint, :overclocker,
-            :flag, :min_ap)
+            :operation_chronos, :flag, :min_ap)
         ON CONFLICT (idagents, `date`) DO UPDATE SET
         `level`=:level,
         ap=:ap,
@@ -503,6 +506,7 @@ class Stat(object):
         second_sunday=:second_sunday,
         eos_imprint=:eos_imprint,
         overclocker=:overclocker,
+        operation_chronos=:operation_chronos,
         flag=:flag,
         `min-ap`=:min_ap;
         '''

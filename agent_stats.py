@@ -82,7 +82,6 @@ def get_stats(group_id, time_span='now', number=10, submitters=[0]):
                    'nl-1331-meetups': '(NL-1331 Meetup(s) Attended)',
                    'hacker': '(Hacks)',
                    'translator': '(Glyph Hack Points)',
-                   'overclocker': '(Overclock Hack Points)',
                    'sojourner': '(Longest Hacking Streak)',
                    'recruiter': '(Agents successfully recruited)',
                    'collector': '(XM Collected)',
@@ -117,6 +116,8 @@ def get_stats(group_id, time_span='now', number=10, submitters=[0]):
                    'epoch': '(Completed Hackstreaks)',
                    'second_sunday': '(Second Sunday Events)',
                    'eos_imprint': '(EOS Points Earned)',
+                   'overclocker': '(Overclock Hack Points)',
+                   'operation_chronos': '(Operations Chronos Points)',
 
                    # obsolete
                    # 'matryoshka_links': '(Matryoshka Links Created)',
@@ -388,6 +389,7 @@ def get_badges(data):
                             'umbra_deploy': [120, 600, 1440],
                             'didact_field': [100, 300, 800],
                             'eos_imprint': [2000, 4000, 8000],
+                            'operation_chronos': [500, 5000, 10000000000000],
                            }.items():
         current = 'Locked'
         multiplier = 1
@@ -452,6 +454,7 @@ def summary(group='all', days=7):
                'epoch',
                'second_sunday',
                'eos_imprint',
+               'operation_chronos',
     )
 
     sql_before = f'''SELECT x.name, s.`date`, `level`, ap, explorer, discoverer,
@@ -464,7 +467,8 @@ def summary(group='all', days=7):
                      prime_challenge, stealth_ops, opr_live, ocf, intel_ops,
                      urban_ops, ifs, maverick, dark_xm_threat, myriad_hack,
                      aurora_glyph, umbra_deploy, didact_field,
-                     scout_controller, epoch, second_sunday, eos_imprint
+                     scout_controller, epoch, second_sunday, eos_imprint,
+                     operation_chronos
                      FROM (
                          SELECT a.name name, s.idagents id, MAX(s.date) AS date
                          FROM agents a, stats s, membership m, `groups` g
@@ -493,7 +497,7 @@ def summary(group='all', days=7):
                   prime_challenge, stealth_ops, opr_live, ocf, intel_ops,
                   urban_ops, ifs, maverick, dark_xm_threat, myriad_hack,
                   aurora_glyph, umbra_deploy, didact_field, scout_controller,
-                  epoch, second_sunday, eos_imprint
+                  epoch, second_sunday, eos_imprint, operation_chronos
                      FROM (
                          SELECT a.name name, s.idagents id, MAX(s.date) AS date
                          FROM agents a, stats s, membership m, `groups` g
