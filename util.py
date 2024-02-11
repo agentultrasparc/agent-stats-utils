@@ -227,6 +227,20 @@ def check_schema():
         ver = 8;
         logging.info(f'schema version updated to {ver}');
 
+    if ver < 9:
+        db = cm.get_conn()
+        db.executescript("""
+           ALTER TABLE `stats`
+           ADD COLUMN `cryptic_memories_op` BIGINT unsigned DEFAULT NULL;
+           ALTER TABLE `stats`
+           ADD COLUMN `research_bounties` BIGINT unsigned DEFAULT NULL;
+           ALTER TABLE `stats`
+           ADD COLUMN `research_days` BIGINT unsigned DEFAULT NULL;
+           UPDATE meta SET schemaver=9;
+        """);
+        ver = 9;
+        logging.info(f'schema version updated to {ver}');
+
     # upgrade schema here
-    # if ver < 9:
+    # if ver < 10:
     #     db.execute("");

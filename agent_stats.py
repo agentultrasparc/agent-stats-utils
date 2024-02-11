@@ -118,6 +118,9 @@ def get_stats(group_id, time_span='now', number=10, submitters=[0]):
                    'eos_imprint': '(EOS Points Earned)',
                    'overclocker': '(Overclock Hack Points)',
                    'operation_chronos': '(Operations Chronos Points)',
+                   'cryptic_memories_op': '(Cryptic Memories Global Op Points)',
+                   'research_bounties': '(Research Bounties Completed)',
+                   'research_days': '(Research Days Completed)',
 
                    # obsolete
                    # 'matryoshka_links': '(Matryoshka Links Created)',
@@ -390,6 +393,7 @@ def get_badges(data):
                             'didact_field': [100, 300, 800],
                             'eos_imprint': [2000, 4000, 8000],
                             'operation_chronos': [500, 5000, 10000000000000],
+                            'cryptic_memories_op': [1500, 15000, 10000000000000],
                            }.items():
         current = 'Locked'
         multiplier = 1
@@ -455,6 +459,7 @@ def summary(group='all', days=7):
                'second_sunday',
                'eos_imprint',
                'operation_chronos',
+               'cryptic_memories_op',
     )
 
     sql_before = f'''SELECT x.name, s.`date`, `level`, ap, explorer, discoverer,
@@ -468,7 +473,7 @@ def summary(group='all', days=7):
                      urban_ops, ifs, maverick, dark_xm_threat, myriad_hack,
                      aurora_glyph, umbra_deploy, didact_field,
                      scout_controller, epoch, second_sunday, eos_imprint,
-                     operation_chronos
+                     operation_chronos, cryptic_memories_op
                      FROM (
                          SELECT a.name name, s.idagents id, MAX(s.date) AS date
                          FROM agents a, stats s, membership m, `groups` g
@@ -497,7 +502,8 @@ def summary(group='all', days=7):
                   prime_challenge, stealth_ops, opr_live, ocf, intel_ops,
                   urban_ops, ifs, maverick, dark_xm_threat, myriad_hack,
                   aurora_glyph, umbra_deploy, didact_field, scout_controller,
-                  epoch, second_sunday, eos_imprint, operation_chronos
+                  epoch, second_sunday, eos_imprint, operation_chronos,
+                  cryptic_memories_op
                      FROM (
                          SELECT a.name name, s.idagents id, MAX(s.date) AS date
                          FROM agents a, stats s, membership m, `groups` g
