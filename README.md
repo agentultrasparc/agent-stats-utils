@@ -94,7 +94,6 @@ If any of the following conditions are not true, the stat is considered suspect:
 ```
     date >= game_start
     today >= date
-    discoverer >= seer
     connector >= mind_controller/2
     hacker+builder+engineer+connector >= explorer
     explorer >= pioneer
