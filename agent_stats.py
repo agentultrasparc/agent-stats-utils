@@ -587,7 +587,7 @@ def weekly_roundup(group):
     output_dict = {}
     submitters = [0] # this list gets modified inside get_stats()
 
-    output_dict['week'] = (start - datetime.timedelta(days=7)).date().strftime("%m/%d")
+    output_dict['week'] = (start - datetime.timedelta(days=7)).date().strftime("%m/%d/%Y")
 
     logging.info('getting weekly top lists')
     output_dict['chart'] = get_stats(group_id, 'weekly', args.number, submitters)
@@ -619,7 +619,7 @@ def monthly_roundup(group):
     submitters = [0] # this list gets modified inside get_stats()
 
     month = (start - datetime.timedelta(days=start.day)).date()
-    output_dict['month'] = month.strftime("%B")
+    output_dict['month'] = month.strftime("%B %Y")
 
     logging.info('getting monthly top lists')
     output_dict['chart'] = get_stats(group_id, 'monthly', args.number, submitters)
