@@ -687,7 +687,8 @@ def custom_roundup(group):
     return render(output_dict)
 
 def render(output_dict):
-    env = Environment(loader = FileSystemLoader('templates', followlinks=True))
+    env = Environment(loader = FileSystemLoader(['templates', '/data/templates', '/app/templates'],
+                                                followlinks=True))
     ext = '.' + args.extension
     if ext == '.debug':
         template = Environment(loader=BaseLoader()).from_string('{{output_dict|pprint}}')
