@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 from util import exec_sql, cm
 from secrets import dbconfig

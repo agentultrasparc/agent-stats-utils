@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 def create_code(new_stats):
     templates = {
         'util.py > check_schema': "  ADD COLUMN `{statname}` BIGINT unsigned DEFAULT NULL,\n",
