@@ -24,6 +24,9 @@ cp extra_stats.py.example data/extra_stats.py # optional
 mkdir data/templates
 cp templates/template.txt data/templates/custom_template.txt # optional
 
+# Create initial known_stats.json
+docker run --rm -v ./data:/data -it agentstats update_categories
+
 docker run --rm -v ./data:/data -it agentstats snarf
 ```
 

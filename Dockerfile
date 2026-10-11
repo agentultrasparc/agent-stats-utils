@@ -4,25 +4,42 @@
 # docker run --rm -v ./data:/data -it --entrypoint /bin/sh agentstats
 #
 
-FROM python:3.14-alpine3.24 AS compile-image
-RUN apk update
+ARG UID=1000
+ARG GID=1000
+ARG PYTHON_VER=3.14
+ARG ALPINE_VER=3.24
 
-RUN python -m venv /app/venv
+###########
+FROM python:${PYTHON_VER}-alpine${ALPINE_VER} AS compile-image
+
+ARG UID GID # Inherit from global scope
+
+USER ${UID}:${GID}
+WORKDIR /app
+RUN python -m venv ./venv
+
 # Make sure we use the virtualenv:
 ENV PATH="/app/venv/bin:$PATH"
 
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --no-cache-dir
 
-FROM python:3.14-alpine3.24 AS build-image
-RUN addgroup -S -g 1000 agentstats && adduser -S agentstats -s /bin/sh -u 1000 -G agentstats
-RUN mkdir /data && chown agentstats:agentstats /data && chmod 0700 /data
+###########
+FROM python:${PYTHON_VER}-alpine${ALPINE_VER} AS build-image
 
-USER agentstats
+ARG UID GID # Inherit from global scope
+
+RUN addgroup -S -g ${GID} agentstats
+RUN adduser -S agentstats -s /bin/sh -h /data -u ${UID} -G agentstats
+USER agentstats:agentstats
+VOLUME /data
+
 COPY --from=compile-image /app/venv /app/venv
-COPY --chmod=0555 agent_stats.py flagtool.py /app/
-COPY --chmod=0444 mail.py slack.py Stat.py util.py /app/
-COPY templates/ /app/templates
+
+WORKDIR /app
+COPY --chmod=0555 agent_stats.py flagtool.py .
+COPY --chmod=0444 mail.py slack.py Stat.py util.py .
+COPY templates/ ./templates
 
 # Make sure we use the virtualenv:
 ENV PATH="/app/venv/bin:/app:$PATH"
@@ -30,4 +47,6 @@ ENV PATH="/app/venv/bin:/app:$PATH"
 # Where to put secrets.py, optional extra_stats.py, and the sqlite database
 ENV PYTHONPATH="/data"
 
+VOLUME /data
+WORKDIR /data
 ENTRYPOINT ["/app/agent_stats.py"]
